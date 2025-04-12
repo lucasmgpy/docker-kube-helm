@@ -18,5 +18,5 @@ O foco principal é a prática das ferramentas e fluxos de trabalho DevOps, com 
 * Kubectl
 * Helm
 * Git / GitHub
-* Rocky Linux 9.5
+* Rocky Linux 9.5(VM)
 
