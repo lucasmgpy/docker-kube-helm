@@ -8,7 +8,7 @@ Este repositório documenta um projeto de aprendizagem passo a passo focado em:
 * Orquestrar os containers localmente com Minikube (Kubernetes).
 * Gerir os deployments no Kubernetes usando Helm.
 
-O foco principal é a prática das ferramentas e fluxos de trabalho DevOps, com ênfase na utilização da linha de comandos no Linux (Rocky Linux 9).
+O foco principal é a prática das ferramentas e fluxos de trabalho DevOps, com ênfase na utilização da linha de comandos no Linux (Rocky Linux 9.5).
 
 ## Tecnologias
 
