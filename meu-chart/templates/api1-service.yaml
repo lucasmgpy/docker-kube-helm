@@ -1,0 +1,27 @@
+# Eu defino um objeto Service para a API 1.
+# 'apiVersion': A versão da API do Kubernetes para Services.
+apiVersion: v1
+# 'kind': O tipo de objeto (Service).
+kind: Service
+# 'metadata': Dados identificativos.
+metadata:
+  # Eu construo o nome do Service (prefixado com o nome da release).
+  name: {{ .Release.Name }}-api1-service
+  # Eu incluo os labels comuns definidos no _helpers.tpl.
+  labels:
+    {{- include "meu-chart.api1.labels" . | nindent 4 }}
+# 'spec': A especificação do Service.
+spec:
+  # 'type': O tipo de Service (do values.yaml). 'ClusterIP' é o padrão.
+  type: {{ .Values.api1.service.type }}
+  # 'ports': A lista de portas que o Service expõe.
+  ports:
+    - port: {{ .Values.api1.service.port }} # A porta pela qual o Service será acessível DENTRO do cluster.
+      targetPort: http # O nome da porta do container (definido no Deployment) para onde o tráfego será enviado.
+                    # Poderia também usar o número da porta: {{ .Values.api1.service.targetPort }}
+      protocol: TCP
+      name: http # Nome da porta do serviço.
+  # 'selector': Como o Service encontra os Pods para onde deve enviar tráfego.
+  #             IMPORTANTE: Deve corresponder exatamente aos labels dos Pods geridos pelo Deployment da API 1.
+  selector:
+    {{- include "meu-chart.api1.selectorLabels" . | nindent 4 }}

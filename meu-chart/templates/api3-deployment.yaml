@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-api3
+  labels:
+    {{- include "meu-chart.api3.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.api3.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "meu-chart.api3.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "meu-chart.api3.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: api3
+          image: "{{ .Values.api3.image.repository }}:{{ .Values.api3.image.tag }}"
+          imagePullPolicy: {{ .Values.api3.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.api3.service.targetPort }}
+              protocol: TCP

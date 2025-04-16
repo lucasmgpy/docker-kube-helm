@@ -1,0 +1,33 @@
+A tua release {{ .Release.Name }} foi instalada.
+
+As APIs estão agora a correr dentro do cluster Minikube.
+Como os Services são do tipo ClusterIP, eles não estão diretamente acessíveis de fora do cluster.
+
+Podes aceder a cada API usando os seguintes comandos (pode demorar um momento a iniciar):
+
+API 1 ("WHAT DAY IS TODAY?"):
+export SERVICE_API1_URL=\$(minikube service {{ .Release.Name }}-api1-service --url)
+echo "Acede à API 1 em: \$SERVICE_API1_URL"
+curl \$SERVICE_API1_URL
+
+API 2 (Dia Atual):
+export SERVICE_API2_URL=\$(minikube service {{ .Release.Name }}-api2-service --url)
+echo "Acede à API 2 em: \$SERVICE_API2_URL/date"
+curl \$SERVICE_API2_URL/date
+
+API 3 (Hora Atual):
+export SERVICE_API3_URL=\$(minikube service {{ .Release.Name }}-api3-service --url)
+echo "Acede à API 3 em: \$SERVICE_API3_URL/time"
+curl \$SERVICE_API3_URL/time
+
+Alternativamente, podes usar 'kubectl port-forward':
+kubectl port-forward service/{{ .Release.Name }}-api1-service 9000:{{ .Values.api1.service.port }}
+kubectl port-forward service/{{ .Release.Name }}-api2-service 9001:{{ .Values.api2.service.port }}
+kubectl port-forward service/{{ .Release.Name }}-api3-service 9002:{{ .Values.api2.service.port }}
+(Depois acede via http://localhost:9000, http://localhost:9001/date, http://localhost:9002/time)
+
+NOTA: O link 'WHAT DAY IS TODAY?' na API 1 pode não funcionar diretamente para a API 2
+      porque ele está hardcoded para 'localhost:5001'. Dentro do cluster, os serviços
+      comunicam de forma diferente (usando nomes de serviço ou IPs de cluster).
+      O mesmo se aplica ao link da api2 para a 3
+      Testa cada URL acima individualmente.

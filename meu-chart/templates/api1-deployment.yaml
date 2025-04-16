@@ -1,0 +1,49 @@
+# Eu defino aqui um objeto Deployment para a API 1.
+# 'apiVersion': A versão da API do Kubernetes para o objeto Deployment.
+apiVersion: apps/v1
+# 'kind': O tipo de objeto Kubernetes (neste caso, Deployment).
+kind: Deployment
+# 'metadata': Dados que identificam o objeto.
+metadata:
+  # Eu construo o nome do Deployment dinamicamente.
+  # Uso o nome da release Helm (ex: 'meu-release') como prefixo para evitar conflitos.
+  name: {{ .Release.Name }}-api1
+  # Eu incluo os labels comuns definidos no _helpers.tpl.
+  labels:
+    {{- include "meu-chart.api1.labels" . | nindent 4 }}
+# 'spec': A especificação do estado desejado para o Deployment.
+spec:
+  # 'replicas': O número de Pods que queremos a correr. Eu pego este valor do values.yaml.
+  replicas: {{ .Values.api1.replicaCount }}
+  # 'selector': Como o Deployment encontra os Pods que ele deve gerir.
+  selector:
+    # 'matchLabels': Os Pods geridos por este Deployment devem ter estes labels.
+    matchLabels:
+      {{- include "meu-chart.api1.selectorLabels" . | nindent 6 }}
+  # 'template': O modelo (blueprint) para os Pods que o Deployment vai criar.
+  template:
+    # 'metadata': Labels a serem aplicados a cada Pod criado.
+    metadata:
+      labels:
+        {{- include "meu-chart.api1.selectorLabels" . | nindent 8 }}
+    # 'spec': A especificação do conteúdo do Pod.
+    spec:
+      # 'containers': Lista de containers a correr dentro do Pod (pode haver mais que um).
+      containers:
+        # Eu defino o container principal para a api1.
+        - name: api1 # Um nome para o container dentro do Pod.
+          # 'image': A imagem Docker a usar para este container.
+          # Eu construo o nome completo da imagem a partir dos valores em values.yaml.
+          image: "{{ .Values.api1.image.repository }}:{{ .Values.api1.image.tag }}"
+          # 'imagePullPolicy': A política para puxar a imagem (do values.yaml).
+          imagePullPolicy: {{ .Values.api1.image.pullPolicy }}
+          # 'ports': As portas que este container expõe.
+          ports:
+            - name: http # Um nome descritivo para a porta.
+              # 'containerPort': A porta dentro do container que a aplicação (Flask) está a ouvir.
+              containerPort: {{ .Values.api1.service.targetPort }}
+              # 'protocol': O protocolo usado (TCP é o padrão para HTTP).
+              protocol: TCP
+          # Eu poderia adicionar aqui 'livenessProbe' e 'readinessProbe' para verificações de saúde,
+          # mas vou manter simples por agora.
+          # Eu também poderia definir 'resources' (limits e requests de CPU/memória).

@@ -1,0 +1,60 @@
+# values.yaml para meu-chart
+
+# Eu defino aqui os valores padrão para a minha aplicação.
+# Estes valores podem ser substituídos durante a instalação do Helm
+# (ex: helm install ... --set api1.replicaCount=3)
+
+api1:
+  # Eu defino o número de réplicas (Pods) que quero para a api1.
+  replicaCount: 1
+
+  image:
+    # Eu especifico o nome da imagem Docker para a api1.
+    repository: api1
+    # Eu especifico a tag da imagem.
+    tag: v1
+    # Eu defino a política para o pull da imagem.
+    # 'IfNotPresent': Baixa a imagem apenas se ela já não existir localmente no nó.
+    #                 Isto é crucial para usar as nossas imagens locais (api1:v1, api2:v1)
+    #                 que já estão no cache do Docker daemon partilhado com o Minikube.
+    # 'Always': Força sempre a tentativa de puxar a imagem de um registry remoto.
+    # 'Never': Nunca tenta puxar a imagem, falha se não existir localmente.
+    pullPolicy: IfNotPresent
+
+  service:
+    # Eu defino o tipo de Service Kubernetes a ser criado para a api1.
+    # 'ClusterIP': Expõe o serviço num IP interno do cluster, acessível apenas DENTRO do cluster.
+    #              É o tipo padrão e bom para comunicação inter-serviços ou acesso via port-forward/proxy.
+    # 'NodePort': Expõe o serviço numa porta estática em cada IP de Nó do cluster.
+    # 'LoadBalancer': Cria um balanceador de carga externo (em provedores de cloud) para expor o serviço.
+    type: ClusterIP
+    # Eu defino a porta pela qual o Service será acessível DENTRO do cluster.
+    port: 80
+    # Eu defino a porta na qual os Pods da api1 estão a ouvir (a porta do container Flask).
+    targetPort: 5000
+
+api2:
+  replicaCount: 1
+
+  image:
+    repository: api2
+    tag: v3
+    pullPolicy: IfNotPresent
+
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 5001
+    
+api3:
+  replicaCount: 1
+
+  image:
+    repository: api3
+    tag: v1
+    pullPolicy: IfNotPresent
+
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 5002

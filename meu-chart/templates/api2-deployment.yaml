@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-api2
+  labels:
+    {{- include "meu-chart.api2.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.api2.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "meu-chart.api2.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "meu-chart.api2.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: api2
+          image: "{{ .Values.api2.image.repository }}:{{ .Values.api2.image.tag }}"
+          imagePullPolicy: {{ .Values.api2.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.api2.service.targetPort }}
+              protocol: TCP

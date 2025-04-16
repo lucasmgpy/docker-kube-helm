@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-api2-service
+  labels:
+    {{- include "meu-chart.api2.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.api2.service.type }}
+  ports:
+    - port: {{ .Values.api2.service.port }}
+      targetPort: http # Nome da porta do container da api2
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "meu-chart.api2.selectorLabels" . | nindent 4 }}
