@@ -86,7 +86,7 @@ O foco manteve-se na utilização da linha de comandos (CLI) no Linux.
     ```
 
 7.  **Verificar os Pods:**
-    Espera até que todos os Pods estejam no estado `Running` e que estejam a usar as imagens corretas (v2, v4, v2).
+    Espera até que todos os Pods estejam no estado `Running` e que estejam a usar as imagens corretas (v1).
     ```bash
     kubectl get pods -w -l app.kubernetes.io/instance=meu-release
     # (Pressiona Ctrl+C para sair quando estiverem Running)
@@ -135,9 +135,9 @@ Quando terminares os testes:
     ```
 5.  (Opcional) Remove as imagens Docker construídas (usa as tags corretas):
     ```bash
-    docker rmi api1:v2 api2:v4 api3:v2
+    docker rmi api1:v1 api2:v1 api3:v1
     ```
 6.  (Opcional) Remove as imagens do cache do Minikube (se `minikube delete` não foi usado):
     ```bash
-    minikube image rm api1:v2 api2:v4 api3:v2
+    minikube image rm api1:v1 api2:v1 api3:v1
     ```
