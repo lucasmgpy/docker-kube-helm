@@ -1,3 +1,4 @@
+import os
 from flask import Flask
 import datetime
 
@@ -9,6 +10,9 @@ def show_time(): # Renomeado de show_date
     # Obtemos a hora inicial apenas para o caso do JavaScript falhar
     now = datetime.datetime.now()
     current_time = now.strftime('%H:%M:%S')
+
+    #variaveis para navegacao entre apis
+    api2_target_url_from_api3 = os.environ.get('API2_URL_FOR_API3', 'http://localhost:5001/date')
 
     html_content = f"""
     <!DOCTYPE html>
@@ -34,7 +38,7 @@ def show_time(): # Renomeado de show_date
     </head>
     <body>
 
-        <a href="http://localhost:5001/date" class="time-link" id="clock-link">{current_time}</a>
+        <a href="{api2_target_url_from_api3}" class="time-link" id="clock-link">{current_time}</a>
 
 
         <script>

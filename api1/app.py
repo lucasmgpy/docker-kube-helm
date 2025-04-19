@@ -1,16 +1,20 @@
+import os
 from flask import Flask
 
 app = Flask(__name__)
 
 @app.route('/')
 def homepage():
-    html_content = """
+
+    api2_target_url = os.environ.get('API2_URL','http://localhost:5001/date')
+
+    html_content = f"""
     <!DOCTYPE html>
     <html>
     <head>
-        <title>API 1 - Pergunta</title>
+        <title>API 1 - Primeira pergunta</title>
         <style>
-            body, html {
+            body, html {{
                 height: 100%;
                 margin: 0;
                 display: flex;
@@ -18,23 +22,23 @@ def homepage():
                 align-items: center;
                 background-color: #f0f0f0;
                 font-family: sans-serif;
-            }
-            a {
+            }}
+            a.link {{
                 font-size: 9em;
                 color: #333;
                 text-decoration: none;
-            }
-            a:hover {
+            }}
+            a.link:hover {{
                 color: #00796b;
-            }
+            }}
         </style>
     </head>
     <body>
-        <a href="http://localhost:5001/date">WHAT DAY IS TODAY?</a>
+        <a href="{api2_target_url}" class="link">WHAT DAY IS TODAY?</a>
     </body>
     </html>
     """
-    
+
     return html_content
 
 if __name__ == '__main__':

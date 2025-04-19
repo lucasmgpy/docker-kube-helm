@@ -38,7 +38,7 @@ api2:
 
   image:
     repository: api2
-    tag: v3
+    tag: v1
     pullPolicy: IfNotPresent
 
   service:

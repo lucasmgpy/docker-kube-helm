@@ -13,7 +13,9 @@ O objetivo principal é ganhar experiência prática com o ciclo de vida de uma 
 3.  **Orquestração Local:** Implantar e gerir os containers num cluster Kubernetes local simulado pelo Minikube.
 4.  **Gestão de Deployments:** Utilizar o Helm para criar um pacote reutilizável (Chart) que define e gere os recursos Kubernetes necessários para a aplicação.
 
-O projeto evoluiu para incluir três APIs interativas que se ligam umas às outras (Dia -> Data -> Hora -> Data...), demonstrando comunicação básica entre serviços (ainda que com links hardcoded neste exemplo). O foco manteve-se na utilização da linha de comandos (CLI) no Linux.
+O projeto evoluiu para incluir três APIs interativas que se ligam umas às outras (Dia -> Data -> Hora -> Data...). Crucialmente, as APIs foram **refatoradas para ler os URLs das outras APIs a partir de variáveis de ambiente**, em vez de usar links "hardcoded". O Helm Chart foi atualizado para injetar essas variáveis de ambiente com os **nomes de serviço DNS internos do Kubernetes**, preparando a aplicação para comunicação dentro do cluster e para deployments mais complexos (como Ingress ou Cloud).
+
+O foco manteve-se na utilização da linha de comandos (CLI) no Linux.
 
 ## Tecnologias Utilizadas
 
@@ -38,7 +40,7 @@ O projeto evoluiu para incluir três APIs interativas que se ligam umas às outr
     * **Kubectl:** [Instruções de Instalação](https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/)
     * **Helm:** [Instruções de Instalação](https://helm.sh/docs/intro/install/)
 
-## Como Replicar e Testar
+## Como Replicar e Testar (Estado Atual)
 
 1.  **Clonar o Repositório:**
     ```bash
@@ -48,16 +50,16 @@ O projeto evoluiu para incluir três APIs interativas que se ligam umas às outr
 
 2.  **Garantir Pré-requisitos:** Certifica-te que todas as ferramentas listadas acima estão instaladas e que o serviço Docker está a correr (`sudo systemctl status docker`).
 
-3.  **Construir as Imagens Docker:**
-    Navega para o diretório de cada API e constrói a imagem correspondente.
+3.  **Construir as Imagens Docker (Versões Atuais):**
+    Navega para o diretório de cada API e constrói a imagem correspondente com a tag correta.
     ```bash
-    # API 1
+    # API 1 (v1 contém a leitura de env var)
     cd api1 && docker build -t api1:v1 . && cd ..
 
-    # API 2 (Nota: usa a tag v3 devido às atualizações)
-    cd api2 && docker build -t api2:v3 . && cd ..
+    # API 2 (v1 contém leitura de env vars e layout corrigido)
+    cd api2 && docker build -t api2:v1 . && cd ..
 
-    # API 3
+    # API 3 (v1 contém leitura de env var e JS clock)
     cd api3 && docker build -t api3:v1 . && cd ..
 
     # Verifica se as imagens foram criadas
@@ -70,51 +72,49 @@ O projeto evoluiu para incluir três APIs interativas que se ligam umas às outr
     ```
 
 5.  **Carregar Imagens para o Minikube:**
-    (Este passo garante que o Kubernetes dentro do Minikube encontra as imagens locais)
+    (Garante que o Kubernetes encontra as versões corretas das imagens locais)
     ```bash
     minikube image load api1:v1
-    minikube image load api2:v3
+    minikube image load api2:v1
     minikube image load api3:v1
     ```
 
 6.  **Instalar/Atualizar a Aplicação com Helm:**
-    Usamos `helm upgrade --install` que instala a release se ela não existir, ou atualiza-a se já existir.
+    Usamos `helm upgrade --install` que instala a release se ela não existir, ou atualiza-a se já existir (aplicando as últimas alterações do chart, como as novas tags de imagem e as variáveis de ambiente nos deployments).
     ```bash
     helm upgrade --install meu-release ./meu-chart
     ```
 
 7.  **Verificar os Pods:**
-    Espera até que todos os Pods estejam no estado `Running`.
+    Espera até que todos os Pods estejam no estado `Running` e que estejam a usar as imagens corretas (v2, v4, v2).
     ```bash
     kubectl get pods -w -l app.kubernetes.io/instance=meu-release
     # (Pressiona Ctrl+C para sair quando estiverem Running)
     ```
-    Se algum Pod ficar em erro (ex: `ImagePullBackOff`), verifica se as imagens foram carregadas corretamente no passo 5 e tenta apagar o Pod (`kubectl delete pod <nome-do-pod>`) para que o Kubernetes tente recriá-lo.
+    Se algum Pod ficar em erro, verifica o carregamento das imagens (passo 5) ou usa `kubectl describe pod <nome-pod>` para mais detalhes.
 
 8.  **Aceder às APIs (Usando Port-Forward):**
-    Para testar a navegação entre as APIs clicando nos links (que estão hardcoded com `localhost:porta`), o método mais direto é usar `kubectl port-forward` com as portas locais correspondentes. Abre **três terminais separados**.
+    Neste estado, os links gerados pelas APIs usam nomes DNS internos do Kubernetes (ex: `http://meu-release-api2-service:80/date`). Estes nomes não são resolvidos pelo teu browser fora do cluster. Para testar, usamos `kubectl port-forward`.
 
-    * **Terminal 1 (API 1):** Encaminha a porta local 5000 para o serviço da API 1.
-        ```bash
-        kubectl port-forward service/meu-release-api1-service 5000:80
-        ```
-    * **Terminal 2 (API 2):** Encaminha a porta local 5001 para o serviço da API 2.
-        ```bash
-        kubectl port-forward service/meu-release-api2-service 5001:80
-        ```
-    * **Terminal 3 (API 3):** Encaminha a porta local 5002 para o serviço da API 3.
-        ```bash
-        kubectl port-forward service/meu-release-api3-service 5002:80
-        ```
+    * **Opção A (Testar Funcionalidade Individual):** Abre 3 terminais e executa:
+        * Terminal 1: `kubectl port-forward service/meu-release-api1-service 9000:80`
+        * Terminal 2: `kubectl port-forward service/meu-release-api2-service 9001:80`
+        * Terminal 3: `kubectl port-forward service/meu-release-api3-service 9002:80`
+        * **Teste:** Acede manualmente a `http://localhost:9000`, `http://localhost:9001/date`, `http://localhost:9002/time` no browser para ver cada API. Clicar nos links *não* funcionará para navegação direta entre eles neste modo.
 
-    **Mantém os três terminais a executar os comandos `port-forward`.**
+    * **Opção B (Testar Links Clicáveis com Portas Específicas):** Para fazer os links funcionarem *neste cenário específico de port-forward*, mapeia as portas locais para corresponderem às portas usadas nos URLs internos (que foram originalmente baseados em `localhost:porta`). Abre 3 terminais:
+        * Terminal 1: `kubectl port-forward service/meu-release-api1-service 5000:80`
+        * Terminal 2: `kubectl port-forward service/meu-release-api2-service 5001:80`
+        * Terminal 3: `kubectl port-forward service/meu-release-api3-service 5002:80`
+        * **Teste:** Abre `http://localhost:5000`. Agora, clicar nos links *deveria* permitir navegar entre as APIs, pois os `href` gerados (ex: `http://meu-release-api2-service:80/date`) serão corretamente encaminhados pelos túneis `port-forward` que estão a ouvir nas portas `localhost` esperadas (5001, 5002, 5000).
 
-9.  **Testar no Browser:**
-    * Abre o browser e vai a `http://localhost:5000` (API 1).
-    * Clica no link "WHAT DAY IS TODAY?". Deverás ir para `http://localhost:5001/date` (API 2).
-    * Na API 2, clica no link "I challenge you...". Deverás ir para `http://localhost:5002/time` (API 3).
-    * Na API 3, clica no link da hora. Deverás voltar para `http://localhost:5001/date` (API 2).
-    * Na API 2, clica no link da data. Deverás voltar para `http://localhost:5000` (API 1).
+    **Mantém os três terminais a executar os comandos `port-forward` durante o teste.**
+
+## Próximos Passos (Planeados)
+
+* Implementar um **Kubernetes Ingress** para expor as três APIs através de um único ponto de entrada e permitir o uso de links relativos.
+* Explorar o deployment em cloud (ex: Google Kubernetes Engine - GKE).
+* Configurar um pipeline de CI/CD.
 
 ## Limpeza
 
@@ -133,13 +133,11 @@ Quando terminares os testes:
     ```bash
     minikube delete
     ```
-5.  (Opcional) Remove as imagens Docker construídas:
+5.  (Opcional) Remove as imagens Docker construídas (usa as tags corretas):
     ```bash
-    docker rmi api1:v1 api2:v3 api3:v1
+    docker rmi api1:v2 api2:v4 api3:v2
     ```
-6.  (Opcional) Remove as imagens do cache do Minikube (se carregadas):
+6.  (Opcional) Remove as imagens do cache do Minikube (se `minikube delete` não foi usado):
     ```bash
-    # Tenta remover (pode variar ligeiramente conforme a versão do minikube)
-    minikube image rm api1:v1 api2:v3 api3:v1
+    minikube image rm api1:v2 api2:v4 api3:v2
     ```
-

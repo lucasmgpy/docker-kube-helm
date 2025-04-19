@@ -1,3 +1,4 @@
+import os
 from flask import Flask
 import datetime
 
@@ -7,6 +8,10 @@ app = Flask(__name__)
 def show_date():
     today = datetime.date.today()
     current_date = today.strftime('%Y-%m-%d') # Formato AAAA-MM-DD
+
+    #variavel ambiente para navecação entre apis
+    api1_target_url = os.environ.get('API1_URL','http://localhost:5000')
+    api3_target_url = os.environ.get('API3_URL','http://localhost:5002/time')
 
     html_content = f"""
     <!DOCTYPE html>
@@ -46,9 +51,9 @@ def show_date():
         </style>
     </head>
     <body>
-        <a href="http://localhost:5000/" class="date-link">{current_date}</a>
+        <a href="{api1_target_url}" class="date-link">{current_date}</a>
 
-        <a href="http://localhost:5002/time" class="challenge-link">I challenge you to tell me the time</a>
+        <a href="{api3_target_url}" class="challenge-link">I challenge you to tell me the time</a>
     </body>
     </html>
     """

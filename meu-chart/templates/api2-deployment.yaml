@@ -22,3 +22,9 @@ spec:
             - name: http
               containerPort: {{ .Values.api2.service.targetPort }}
               protocol: TCP
+          
+          env:
+            - name: API1_URL # Variável para apontar para a API 1
+              value: "http://{{ .Release.Name }}-api1-service:{{ .Values.api1.service.port }}/"
+            - name: API3_URL # Variável para apontar para a API 3
+              value: "http://{{ .Release.Name }}-api3-service:{{ .Values.api3.service.port }}/time"

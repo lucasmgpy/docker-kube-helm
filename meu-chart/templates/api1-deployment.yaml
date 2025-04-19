@@ -47,3 +47,7 @@ spec:
           # Eu poderia adicionar aqui 'livenessProbe' e 'readinessProbe' para verificações de saúde,
           # mas vou manter simples por agora.
           # Eu também poderia definir 'resources' (limits e requests de CPU/memória).
+          env:
+            - name: API2_URL # Nome da variável que o app.py da API 1 espera
+              # Valor: Construído com o nome do Service da API 2 e a sua porta
+              value: "http://{{ .Release.Name }}-api2-service:{{ .Values.api2.service.port }}/date"

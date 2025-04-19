@@ -22,3 +22,7 @@ spec:
             - name: http
               containerPort: {{ .Values.api3.service.targetPort }}
               protocol: TCP
+
+          env:
+            - name: API2_URL_FOR_API3 # Variável que o app.py da API 3 espera
+              value: "http://{{ .Release.Name }}-api2-service:{{ .Values.api2.service.port }}/date"
